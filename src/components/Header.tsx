@@ -9,6 +9,7 @@ import {
   Lock,
   Unlock,
   Key,
+  Printer,
 } from 'lucide-react';
 import type { FamilyMember } from '../types';
 
@@ -22,6 +23,7 @@ interface HeaderProps {
   onCollapseAll: () => void;
   onSelectMember: (member: FamilyMember) => void;
   onSeedSample: () => void;
+  onPrint: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -34,6 +36,7 @@ export const Header: React.FC<HeaderProps> = ({
   onCollapseAll,
   onSelectMember,
   onSeedSample,
+  onPrint,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -266,6 +269,17 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="hidden lg:inline">طي الكل</span>
             </button>
           </div>
+
+          {/* Print Button (A4 format) */}
+          <button
+            type="button"
+            onClick={onPrint}
+            title="طباعة شجرة العائلة بتنسيق A4 مناسب"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3 sm:py-2 rounded-2xl bg-stone-100 hover:bg-stone-200/90 text-stone-700 text-xs font-bold border border-stone-200 transition-all cursor-pointer shadow-2xs"
+          >
+            <Printer className="w-3.5 h-3.5 text-stone-600" />
+            <span className="hidden sm:inline">طباعة (A4)</span>
+          </button>
 
           {/* Add Person (Desktop) - Hidden if in Read-Only mode */}
           {!isReadOnly && (

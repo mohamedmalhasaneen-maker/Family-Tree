@@ -152,6 +152,7 @@ export const FamilyTreeCanvas: React.FC<FamilyTreeCanvasProps> = ({
   return (
     <div
       ref={containerRef}
+      id="family-tree-canvas-container"
       className={`relative w-full h-[calc(100vh-73px)] overflow-hidden bg-stone-50 select-none ${
         isDragging ? 'cursor-grabbing' : 'cursor-grab'
       }`}
@@ -166,7 +167,7 @@ export const FamilyTreeCanvas: React.FC<FamilyTreeCanvasProps> = ({
     >
       {/* Subtle Dot Grid Background */}
       <div
-        className="absolute inset-0 pointer-events-none opacity-25"
+        className="absolute inset-0 pointer-events-none opacity-25 no-print"
         style={{
           backgroundImage:
             'radial-gradient(circle at 1px 1px, #78716c 1px, transparent 0)',
@@ -175,7 +176,7 @@ export const FamilyTreeCanvas: React.FC<FamilyTreeCanvasProps> = ({
       />
 
       {/* Floating Canvas Controls */}
-      <div className="absolute bottom-6 left-6 z-20 flex items-center gap-1.5 p-1.5 bg-white/90 backdrop-blur-md rounded-2xl shadow-md border border-stone-200 text-stone-700">
+      <div className="no-print absolute bottom-6 left-6 z-20 flex items-center gap-1.5 p-1.5 bg-white/90 backdrop-blur-md rounded-2xl shadow-md border border-stone-200 text-stone-700">
         <button
           type="button"
           onClick={handleZoomIn}
@@ -207,15 +208,26 @@ export const FamilyTreeCanvas: React.FC<FamilyTreeCanvasProps> = ({
       </div>
 
       {/* Mobile / Quick navigation helper hint */}
-      <div className="absolute bottom-6 right-6 z-20 hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-white/80 backdrop-blur-md rounded-xl border border-stone-200/80 text-stone-500 text-xs shadow-xs pointer-events-none">
+      <div className="no-print absolute bottom-6 right-6 z-20 hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-white/80 backdrop-blur-md rounded-xl border border-stone-200/80 text-stone-500 text-xs shadow-xs pointer-events-none">
         <Move className="w-3.5 h-3.5 text-stone-400" />
         <span>اسحب للتحريك | التكبير والتصغير من الأزرار أو العجلة</span>
+      </div>
+
+      {/* Print-only Header (Appears only on printed A4 paper) */}
+      <div className="hidden print:block text-center py-4 border-b-2 border-stone-800 mb-6 w-full">
+        <h1 className="text-2xl font-black text-stone-900 tracking-wider">
+          شجرة العائلة
+        </h1>
+        <p className="text-xs text-stone-600 mt-1">
+          مخطط النسب العائلي المتفرع
+        </p>
       </div>
 
       {/* Transformable Canvas Content */}
       <div
         ref={contentRef}
-        className="w-full h-full flex justify-center items-start pt-12 transition-transform duration-75 origin-top"
+        id="family-tree-content"
+        className="w-full h-full flex justify-center items-start pt-12 transition-transform duration-75 origin-top print:pt-4"
         style={{
           transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
         }}

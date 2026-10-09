@@ -217,6 +217,19 @@ export default function App() {
     });
   };
 
+  // Print Family Tree in formatted A4
+  const handlePrint = useCallback(() => {
+    // Expand all branches so that the entire tree is visible when printed
+    const allParentIds = getAllNodeIdsWithChildren(members);
+    setExpandedIds(new Set(allParentIds));
+    showNotification('جارٍ تجهيز شجرة العائلة للطباعة بنسق A4...');
+
+    // Short timeout to let React render all expanded nodes before triggering print
+    setTimeout(() => {
+      window.print();
+    }, 280);
+  }, [members]);
+
   return (
     <div className="min-h-screen bg-stone-50 flex flex-col font-['Tajawal',sans-serif] selection:bg-emerald-100 selection:text-emerald-900">
       {/* Toast Notification */}
@@ -248,6 +261,7 @@ export default function App() {
         onCollapseAll={handleCollapseAll}
         onSelectMember={handleSelectMember}
         onSeedSample={handleSeedSample}
+        onPrint={handlePrint}
       />
 
       {/* Main Family Tree Canvas */}

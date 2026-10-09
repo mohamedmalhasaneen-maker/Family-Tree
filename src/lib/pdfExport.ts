@@ -26,7 +26,7 @@ export async function exportFamilyTreeToPdf(elementId = 'family-tree-content'): 
   titleDiv.style.marginBottom = '28px';
   titleDiv.innerHTML = `
     <h1 style="font-size: 26px; font-weight: 800; color: #1c1917; font-family: Tajawal, sans-serif; margin: 0 0 6px 0;">
-      شجرة العائلة
+      شجرة عائلات الحسنين
     </h1>
     <p style="font-size: 13px; color: #78716c; font-family: Tajawal, sans-serif; margin: 0;">
       مخطط الأنساب والفروع

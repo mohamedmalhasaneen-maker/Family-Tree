@@ -18,7 +18,9 @@ import { AddMemberModal } from './components/AddMemberModal';
 import { EditMemberModal } from './components/EditMemberModal';
 import { DeleteConfirmModal } from './components/DeleteConfirmModal';
 import { PasswordModal } from './components/PasswordModal';
+import { StatsDashboardModal } from './components/StatsDashboardModal';
 import { exportFamilyTreeToPdf } from './lib/pdfExport';
+import { calculateTreeStats } from './lib/statsUtils';
 
 const STORAGE_PASSWORD_KEY = 'family_tree_edit_password';
 
@@ -26,6 +28,7 @@ export default function App() {
   const [members, setMembers] = useState<FamilyMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [isStatsOpen, setIsStatsOpen] = useState(false);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
 
@@ -87,8 +90,37 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // Build tree hierarchy
+  // Build tree hierarchy & statistics
   const rootNodes = useMemo(() => buildTree(members), [members]);
+  const treeStats = useMemo(() => calculateTreeStats(members, rootNodes), [members, rootNodes]);
+
+  // Select search result
+  const handleSelectMember = useCallback(
+    (member: FamilyMember) => {
+      const ancestors = getAncestorIds(member.id, members);
+      setExpandedIds((prev) => {
+        const next = new Set(prev);
+        ancestors.forEach((aId) => next.add(aId));
+        return next;
+      });
+
+      setHighlightedId(member.id);
+      setTimeout(() => {
+        setHighlightedId((curr) => (curr === member.id ? null : curr));
+      }, 3000);
+    },
+    [members]
+  );
+
+  const handleSelectBranch = useCallback(
+    (branchId: string) => {
+      const member = members.find((m) => m.id === branchId);
+      if (member) {
+        handleSelectMember(member);
+      }
+    },
+    [members, handleSelectMember]
+  );
 
   // Toggle Read-Only Mode with password check
   const handleToggleReadOnly = () => {
@@ -152,24 +184,6 @@ export default function App() {
     setExpandedIds(new Set());
     showNotification('تم طي جميع الفروع');
   }, []);
-
-  // Select search result
-  const handleSelectMember = useCallback(
-    (member: FamilyMember) => {
-      const ancestors = getAncestorIds(member.id, members);
-      setExpandedIds((prev) => {
-        const next = new Set(prev);
-        ancestors.forEach((aId) => next.add(aId));
-        return next;
-      });
-
-      setHighlightedId(member.id);
-      setTimeout(() => {
-        setHighlightedId((curr) => (curr === member.id ? null : curr));
-      }, 3000);
-    },
-    [members]
-  );
 
   // Action handlers
   const handleOpenAddModal = (parentId = '') => {
@@ -279,6 +293,7 @@ export default function App() {
         onSeedSample={handleSeedSample}
         onDownloadPdf={handleDownloadPdf}
         isGeneratingPdf={isGeneratingPdf}
+        onOpenStats={() => setIsStatsOpen(true)}
       />
 
       {/* Main Family Tree Canvas */}
@@ -335,6 +350,13 @@ export default function App() {
         onClose={() => setIsPasswordModalOpen(false)}
         onSuccessUnlock={handleSuccessUnlock}
         onChangePassword={handleChangePassword}
+      />
+
+      <StatsDashboardModal
+        isOpen={isStatsOpen}
+        stats={treeStats}
+        onClose={() => setIsStatsOpen(false)}
+        onSelectBranch={handleSelectBranch}
       />
     </div>
   );

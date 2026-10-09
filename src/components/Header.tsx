@@ -9,6 +9,7 @@ import {
   Lock,
   Unlock,
   Download,
+  BarChart3,
 } from 'lucide-react';
 import type { FamilyMember } from '../types';
 
@@ -24,6 +25,7 @@ interface HeaderProps {
   onSeedSample: () => void;
   onDownloadPdf: () => void;
   isGeneratingPdf?: boolean;
+  onOpenStats: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -38,6 +40,7 @@ export const Header: React.FC<HeaderProps> = ({
   onSeedSample,
   onDownloadPdf,
   isGeneratingPdf = false,
+  onOpenStats,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -76,7 +79,7 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
             <div>
               <h1 className="text-lg font-extrabold text-stone-900 leading-tight">
-                شجرة العائلة
+                شجرة عائلات الحسنين
               </h1>
               <p className="text-xs text-stone-500 font-medium">
                 {allMembers.length > 0 ? (
@@ -258,6 +261,17 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="hidden lg:inline">طي الكل</span>
             </button>
           </div>
+
+          {/* Stats Dashboard Button */}
+          <button
+            type="button"
+            onClick={onOpenStats}
+            title="لوحة الإحصائيات والمعلومات"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3 sm:py-2 rounded-2xl bg-stone-100 hover:bg-stone-200/90 text-stone-700 text-xs font-bold border border-stone-200 transition-all cursor-pointer shadow-2xs"
+          >
+            <BarChart3 className="w-3.5 h-3.5 text-emerald-600" />
+            <span className="hidden sm:inline">الإحصائيات</span>
+          </button>
 
           {/* Download PDF Button */}
           <button

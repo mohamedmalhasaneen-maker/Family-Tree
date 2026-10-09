@@ -216,7 +216,7 @@ export const FamilyTreeCanvas: React.FC<FamilyTreeCanvasProps> = ({
       {/* Print-only Header (Appears only on printed A4 paper) */}
       <div className="hidden print:block text-center py-4 border-b-2 border-stone-800 mb-6 w-full">
         <h1 className="text-2xl font-black text-stone-900 tracking-wider">
-          شجرة العائلة
+          شجرة عائلات الحسنين
         </h1>
         <p className="text-xs text-stone-600 mt-1">
           مخطط النسب العائلي المتفرع

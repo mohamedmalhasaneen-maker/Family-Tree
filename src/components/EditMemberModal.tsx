@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Edit2, Check } from 'lucide-react';
 import type { FamilyMember } from '../types';
+import { getMemberFullName } from '../lib/treeUtils';
 
 interface EditMemberModalProps {
   isOpen: boolean;
@@ -128,12 +129,24 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
               disabled={isSubmitting}
             >
               <option value="">شخص رئيسي (جد / أصل الشجرة)</option>
-              {eligibleParents.map((m) => (
-                <option key={m.id} value={m.id}>
-                  ابن / تفرع من: {m.name}
-                </option>
-              ))}
+              {eligibleParents.map((m) => {
+                const fullName = getMemberFullName(m.id, allMembers, 3);
+                const isRoot = !m.parentId;
+                return (
+                  <option key={m.id} value={m.id}>
+                    تفرع من: {fullName} {isRoot ? '(جد / رأس الشجرة)' : ''}
+                  </option>
+                );
+              })}
             </select>
+            {parentId && (
+              <p className="mt-1 text-xs text-amber-700">
+                سيندرج كابن تحت:{' '}
+                <span className="font-bold">
+                  {getMemberFullName(parentId, allMembers, 3)}
+                </span>
+              </p>
+            )}
           </div>
 
           <div className="pt-2 flex items-center justify-end gap-2.5">

@@ -242,15 +242,9 @@ export default function App() {
   const handleDownloadPdf = useCallback(async () => {
     try {
       setIsGeneratingPdf(true);
-      // Expand all branches so that the entire tree is captured
-      const allParentIds = getAllNodeIdsWithChildren(members);
-      setExpandedIds(new Set(allParentIds));
-      showNotification('جارٍ إنشاء ملف PDF لشجرة العائلة...');
+      showNotification('جارٍ إنشاء ملف PDF عالي الدقة لشجرة عائلات الحسنين...');
 
-      // Short timeout to let React render all expanded nodes before capturing
-      await new Promise((resolve) => setTimeout(resolve, 350));
-
-      await exportFamilyTreeToPdf('family-tree-content');
+      await exportFamilyTreeToPdf(rootNodes, members.length);
       showNotification('تم تحميل ملف PDF بنجاح 📄');
     } catch (error) {
       console.error('PDF export error:', error);
@@ -258,7 +252,7 @@ export default function App() {
     } finally {
       setIsGeneratingPdf(false);
     }
-  }, [members]);
+  }, [rootNodes, members.length]);
 
   return (
     <div className="min-h-screen bg-stone-50 flex flex-col font-['Tajawal',sans-serif] selection:bg-emerald-100 selection:text-emerald-900">

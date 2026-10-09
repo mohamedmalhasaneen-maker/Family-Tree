@@ -12,6 +12,7 @@ import {
   BarChart3,
 } from 'lucide-react';
 import type { FamilyMember } from '../types';
+import { getMemberFullName } from '../lib/treeUtils';
 
 interface HeaderProps {
   allMembers: FamilyMember[];
@@ -47,9 +48,10 @@ export const Header: React.FC<HeaderProps> = ({
   const searchRef = useRef<HTMLDivElement>(null);
 
   const filteredMembers = searchQuery.trim()
-    ? allMembers.filter((m) =>
-        m.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
-      )
+    ? allMembers.filter((m) => {
+        const fullName = getMemberFullName(m.id, allMembers, 3);
+        return fullName.toLowerCase().includes(searchQuery.trim().toLowerCase());
+      })
     : [];
 
   useEffect(() => {
@@ -172,12 +174,10 @@ export const Header: React.FC<HeaderProps> = ({
                         onClick={() => handleSelectResult(member)}
                         className="w-full text-right px-3.5 py-2 hover:bg-emerald-50/70 flex items-center justify-between text-xs text-stone-800 transition-colors cursor-pointer"
                       >
-                        <span className="font-bold text-stone-900">{member.name}</span>
-                        {parent ? (
-                          <span className="text-[11px] text-stone-400">
-                            ابن: {parent.name}
-                          </span>
-                        ) : (
+                        <span className="font-bold text-stone-900">
+                          {getMemberFullName(member.id, allMembers, 3)}
+                        </span>
+                        {!member.parentId && (
                           <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-stone-100 text-stone-500">
                             رأس الشجرة
                           </span>

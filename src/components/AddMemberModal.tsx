@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, UserPlus, Check } from 'lucide-react';
 import type { FamilyMember } from '../types';
+import { getMemberFullName } from '../lib/treeUtils';
 
 interface AddMemberModalProps {
   isOpen: boolean;
@@ -114,15 +115,22 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
               disabled={isSubmitting}
             >
               <option value="">شخص رئيسي (جد / أصل الشجرة)</option>
-              {allMembers.map((m) => (
-                <option key={m.id} value={m.id}>
-                  ابن / تفرع من: {m.name}
-                </option>
-              ))}
+              {allMembers.map((m) => {
+                const fullName = getMemberFullName(m.id, allMembers, 3);
+                const isRoot = !m.parentId;
+                return (
+                  <option key={m.id} value={m.id}>
+                    تفرع من: {fullName} {isRoot ? '(جد / رأس الشجرة)' : ''}
+                  </option>
+                );
+              })}
             </select>
             {selectedParent && (
               <p className="mt-1 text-xs text-emerald-600">
-                سيظهر كابن تحت: <span className="font-bold">{selectedParent.name}</span>
+                سيظهر كابن تحت:{' '}
+                <span className="font-bold">
+                  {getMemberFullName(selectedParent.id, allMembers, 3)}
+                </span>
               </p>
             )}
           </div>

@@ -70,3 +70,33 @@ export function getAllNodeIdsWithChildren(members: FamilyMember[]): string[] {
   });
   return Array.from(parentIds);
 }
+
+/**
+ * Returns the member's full name up to binary or ternary (e.g. Person -> Father -> Grandfather)
+ * Example: "علي محمد عبدالله" or "محمد عبدالله" or "عبدالله"
+ */
+export function getMemberFullName(
+  memberId: string,
+  members: FamilyMember[],
+  maxGenerations: number = 3
+): string {
+  const memberMap = new Map<string, FamilyMember>();
+  members.forEach((m) => memberMap.set(m.id, m));
+
+  const current = memberMap.get(memberId);
+  if (!current) return '';
+
+  const names: string[] = [current.name.trim()];
+  let curr = current;
+  let count = 1;
+
+  while (curr.parentId && count < maxGenerations) {
+    const parent = memberMap.get(curr.parentId);
+    if (!parent) break;
+    names.push(parent.name.trim());
+    curr = parent;
+    count++;
+  }
+
+  return names.join(' ');
+}

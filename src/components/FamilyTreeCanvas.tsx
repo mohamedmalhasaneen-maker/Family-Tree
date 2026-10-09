@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { ZoomIn, ZoomOut, RotateCcw, Move } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw, Move, Maximize2 } from 'lucide-react';
 import type { FamilyMember, TreeNode } from '../types';
 import { TreeNodeComponent } from './TreeNodeComponent';
 
@@ -50,6 +50,37 @@ export const FamilyTreeCanvas: React.FC<FamilyTreeCanvasProps> = ({
     setScale(1);
     setPosition({ x: 0, y: 40 });
   }, []);
+
+  // Fit entire tree on screen (single-page view)
+  const handleFitScreen = useCallback(() => {
+    if (!containerRef.current || !contentRef.current) return;
+    const container = containerRef.current;
+    const content = contentRef.current.firstElementChild as HTMLElement;
+    if (!content) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const contentRect = content.getBoundingClientRect();
+
+    const naturalWidth = contentRect.width / scale;
+    const naturalHeight = contentRect.height / scale;
+
+    if (naturalWidth <= 0 || naturalHeight <= 0) return;
+
+    const paddingX = 40;
+    const paddingY = 80;
+    const availWidth = containerRect.width - paddingX * 2;
+    const availHeight = containerRect.height - paddingY * 2;
+
+    const scaleX = availWidth / naturalWidth;
+    const scaleY = availHeight / naturalHeight;
+    const targetScale = Math.min(Math.max(Math.min(scaleX, scaleY), 0.25), 1.2);
+
+    const targetX = (containerRect.width - naturalWidth * targetScale) / 2;
+    const targetY = 30;
+
+    setScale(targetScale);
+    setPosition({ x: targetX, y: targetY });
+  }, [scale]);
 
   // Mouse pan handlers
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -268,6 +299,14 @@ export const FamilyTreeCanvas: React.FC<FamilyTreeCanvasProps> = ({
           <ZoomOut className="w-4 h-4" />
         </button>
         <div className="w-[1px] h-4 bg-stone-200 mx-0.5" />
+        <button
+          type="button"
+          onClick={handleFitScreen}
+          title="عرض الشجرة بالكامل في صفحة واحدة (ملاءمة الشاشة)"
+          className="p-2 hover:bg-stone-100 hover:text-emerald-700 rounded-xl transition-colors cursor-pointer"
+        >
+          <Maximize2 className="w-4 h-4" />
+        </button>
         <button
           type="button"
           onClick={handleResetZoom}

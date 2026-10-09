@@ -100,3 +100,25 @@ export function getMemberFullName(
 
   return names.join(' ');
 }
+
+/**
+ * Returns the generation number of a member (1 = root/founder, 2 = children, 3 = grandchildren, etc.)
+ */
+export function getMemberGeneration(
+  memberId: string,
+  members: FamilyMember[]
+): number {
+  const memberMap = new Map<string, FamilyMember>();
+  members.forEach((m) => memberMap.set(m.id, m));
+
+  let depth = 1;
+  let curr = memberMap.get(memberId);
+
+  while (curr && curr.parentId && memberMap.has(curr.parentId)) {
+    depth++;
+    curr = memberMap.get(curr.parentId);
+  }
+
+  return depth;
+}
+

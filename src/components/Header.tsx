@@ -10,6 +10,7 @@ import {
   Unlock,
   Download,
   BarChart3,
+  BookOpen,
 } from 'lucide-react';
 import type { FamilyMember } from '../types';
 import { getMemberFullName } from '../lib/treeUtils';
@@ -27,6 +28,7 @@ interface HeaderProps {
   onDownloadPdf: () => void;
   isGeneratingPdf?: boolean;
   onOpenStats: () => void;
+  onOpenAllData: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -42,6 +44,7 @@ export const Header: React.FC<HeaderProps> = ({
   onDownloadPdf,
   isGeneratingPdf = false,
   onOpenStats,
+  onOpenAllData,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -271,6 +274,17 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <BarChart3 className="w-3.5 h-3.5 text-emerald-600" />
             <span className="hidden sm:inline">الإحصائيات</span>
+          </button>
+
+          {/* All Data View Button */}
+          <button
+            type="button"
+            onClick={onOpenAllData}
+            title="عرض جميع بيانات وأنساب العائلة في صفحة واحدة"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3 sm:py-2 rounded-2xl bg-stone-100 hover:bg-stone-200/90 text-stone-700 text-xs font-bold border border-stone-200 transition-all cursor-pointer shadow-2xs"
+          >
+            <BookOpen className="w-3.5 h-3.5 text-sky-600" />
+            <span className="hidden sm:inline">سجل البيانات</span>
           </button>
 
           {/* Download PDF Button */}

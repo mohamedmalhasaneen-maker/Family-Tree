@@ -19,6 +19,7 @@ import { EditMemberModal } from './components/EditMemberModal';
 import { DeleteConfirmModal } from './components/DeleteConfirmModal';
 import { PasswordModal } from './components/PasswordModal';
 import { StatsDashboardModal } from './components/StatsDashboardModal';
+import { AllDataViewModal } from './components/AllDataViewModal';
 import { exportFamilyTreeToPdf } from './lib/pdfExport';
 import { calculateTreeStats } from './lib/statsUtils';
 
@@ -29,6 +30,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
+  const [isAllDataOpen, setIsAllDataOpen] = useState(false);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
 
@@ -288,6 +290,7 @@ export default function App() {
         onDownloadPdf={handleDownloadPdf}
         isGeneratingPdf={isGeneratingPdf}
         onOpenStats={() => setIsStatsOpen(true)}
+        onOpenAllData={() => setIsAllDataOpen(true)}
       />
 
       {/* Main Family Tree Canvas */}
@@ -351,6 +354,15 @@ export default function App() {
         stats={treeStats}
         onClose={() => setIsStatsOpen(false)}
         onSelectBranch={handleSelectBranch}
+      />
+
+      <AllDataViewModal
+        isOpen={isAllDataOpen}
+        members={members}
+        rootNodes={rootNodes}
+        stats={treeStats}
+        onClose={() => setIsAllDataOpen(false)}
+        onSelectMember={handleSelectMember}
       />
     </div>
   );

@@ -90,6 +90,47 @@ export async function addMember(
   }
 }
 
+export async function addMultipleMembers(
+  names: string[],
+  parentId: string
+): Promise<FamilyMember[]> {
+  const cleanNames = names.map((n) => n.trim()).filter((n) => n.length > 0);
+  if (cleanNames.length === 0) {
+    throw new Error('يرجى إدخال اسم واحد على الأقل');
+  }
+
+  const batch = writeBatch(db);
+  const now = new Date().toISOString();
+  const createdMembers: FamilyMember[] = [];
+
+  for (const name of cleanNames) {
+    const id = generateId();
+    const docRef = doc(db, MEMBERS_PATH, id);
+    const newMember: FamilyMember = {
+      id,
+      name,
+      parentId: parentId || '',
+      createdBy: '',
+      createdAt: now,
+      updatedAt: now,
+    };
+    batch.set(docRef, {
+      name: newMember.name,
+      parentId: newMember.parentId,
+      createdAt: newMember.createdAt,
+      updatedAt: newMember.updatedAt,
+    });
+    createdMembers.push(newMember);
+  }
+
+  try {
+    await batch.commit();
+    return createdMembers;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.WRITE, MEMBERS_PATH);
+  }
+}
+
 export async function updateMember(
   id: string,
   name: string,

@@ -3,6 +3,7 @@ import type { FamilyMember } from './types';
 import {
   subscribeFamilyMembers,
   addMember,
+  addMultipleMembers,
   updateMember,
   deleteMember,
   seedSampleFamily,
@@ -207,10 +208,15 @@ export default function App() {
     });
   };
 
-  const handleAddSubmit = async (name: string, parentId: string) => {
-    await addMember(name, parentId);
-    showNotification(`تمت إضافة «${name}» إلى الشجرة بنجاح`);
-    // Ensure parent is expanded so new member is immediately visible
+  const handleAddSubmit = async (names: string[], parentId: string) => {
+    if (names.length === 1) {
+      await addMember(names[0], parentId);
+      showNotification(`تمت إضافة «${names[0]}» إلى الشجرة بنجاح`);
+    } else {
+      await addMultipleMembers(names, parentId);
+      showNotification(`تمت إضافة (${names.length}) أشخاص إلى الشجرة بنجاح 🎉`);
+    }
+    // Ensure parent is expanded so new member(s) are immediately visible
     if (parentId) {
       setExpandedIds((prev) => new Set([...prev, parentId]));
     }

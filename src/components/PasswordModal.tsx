@@ -42,6 +42,11 @@ export const PasswordModal: React.FC<PasswordModalProps> = ({
 
   if (!isOpen) return null;
 
+  const normalizeDigits = (str: string): string => {
+    const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    return str.replace(/[٠-٩]/g, (d) => String(arabicDigits.indexOf(d))).trim();
+  };
+
   const handleUnlockSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!password) {
@@ -49,7 +54,10 @@ export const PasswordModal: React.FC<PasswordModalProps> = ({
       return;
     }
 
-    if (password === currentPasswordHash) {
+    const normalizedInput = normalizeDigits(password);
+    const normalizedTarget = normalizeDigits(currentPasswordHash);
+
+    if (normalizedInput === normalizedTarget || password.trim() === currentPasswordHash.trim()) {
       setError(null);
       onSuccessUnlock();
       onClose();
@@ -165,22 +173,6 @@ export const PasswordModal: React.FC<PasswordModalProps> = ({
                     ) : (
                       <Eye className="w-4 h-4" />
                     )}
-                  </button>
-                </div>
-                <div className="mt-2 flex items-center justify-between text-[11px] text-stone-500">
-                  <span>
-                    كلمة المرور الافتراضية: <strong className="font-mono text-stone-700">1234</strong>
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMode('change');
-                      setError(null);
-                      setPassword('');
-                    }}
-                    className="text-emerald-700 hover:underline font-semibold cursor-pointer"
-                  >
-                    تغيير كلمة المرور
                   </button>
                 </div>
               </div>

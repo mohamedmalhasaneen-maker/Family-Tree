@@ -8,8 +8,7 @@ import {
   X,
   Lock,
   Unlock,
-  Key,
-  Printer,
+  Download,
 } from 'lucide-react';
 import type { FamilyMember } from '../types';
 
@@ -17,13 +16,14 @@ interface HeaderProps {
   allMembers: FamilyMember[];
   isReadOnly: boolean;
   onToggleReadOnly: () => void;
-  onChangePasswordClick: () => void;
+  onChangePasswordClick?: () => void;
   onAddPersonClick: () => void;
   onExpandAll: () => void;
   onCollapseAll: () => void;
   onSelectMember: (member: FamilyMember) => void;
   onSeedSample: () => void;
-  onPrint: () => void;
+  onDownloadPdf: () => void;
+  isGeneratingPdf?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -36,7 +36,8 @@ export const Header: React.FC<HeaderProps> = ({
   onCollapseAll,
   onSelectMember,
   onSeedSample,
-  onPrint,
+  onDownloadPdf,
+  isGeneratingPdf = false,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -234,18 +235,6 @@ export const Header: React.FC<HeaderProps> = ({
                 </div>
               )}
             </button>
-
-            {/* Key icon to change password when unlocked */}
-            {!isReadOnly && (
-              <button
-                type="button"
-                onClick={onChangePasswordClick}
-                title="تغيير كلمة المرور"
-                className="p-1.5 text-stone-500 hover:text-emerald-700 hover:bg-white rounded-xl transition-colors cursor-pointer"
-              >
-                <Key className="w-3.5 h-3.5" />
-              </button>
-            )}
           </div>
 
           {/* Expand All / Collapse All */}
@@ -270,15 +259,22 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           </div>
 
-          {/* Print Button (A4 format) */}
+          {/* Download PDF Button */}
           <button
             type="button"
-            onClick={onPrint}
-            title="طباعة شجرة العائلة بتنسيق A4 مناسب"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3 sm:py-2 rounded-2xl bg-stone-100 hover:bg-stone-200/90 text-stone-700 text-xs font-bold border border-stone-200 transition-all cursor-pointer shadow-2xs"
+            onClick={onDownloadPdf}
+            disabled={isGeneratingPdf}
+            title="تحميل شجرة العائلة بتنسيق PDF"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3 sm:py-2 rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-300 transition-all cursor-pointer shadow-2xs disabled:opacity-50"
           >
-            <Printer className="w-3.5 h-3.5 text-stone-600" />
-            <span className="hidden sm:inline">طباعة (A4)</span>
+            {isGeneratingPdf ? (
+              <div className="w-3.5 h-3.5 border-2 border-emerald-700 border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Download className="w-3.5 h-3.5 text-emerald-700" />
+            )}
+            <span className="hidden sm:inline">
+              {isGeneratingPdf ? 'جارٍ التحميل...' : 'تحميل PDF'}
+            </span>
           </button>
 
           {/* Add Person (Desktop) - Hidden if in Read-Only mode */}

@@ -18,19 +18,26 @@ import { AddMemberModal } from './components/AddMemberModal';
 import { EditMemberModal } from './components/EditMemberModal';
 import { DeleteConfirmModal } from './components/DeleteConfirmModal';
 import { PasswordModal } from './components/PasswordModal';
+import { exportFamilyTreeToPdf } from './lib/pdfExport';
 
 const STORAGE_PASSWORD_KEY = 'family_tree_edit_password';
 
 export default function App() {
   const [members, setMembers] = useState<FamilyMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
 
   // Read-only mode & Password protection state
   const [isReadOnly, setIsReadOnly] = useState<boolean>(true);
   const [passwordHash, setPasswordHash] = useState<string>(() => {
-    return localStorage.getItem(STORAGE_PASSWORD_KEY) || '1234';
+    const saved = localStorage.getItem(STORAGE_PASSWORD_KEY);
+    if (!saved || saved === '1234') {
+      localStorage.setItem(STORAGE_PASSWORD_KEY, '2010');
+      return '2010';
+    }
+    return saved;
   });
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [passwordModalMode, setPasswordModalMode] = useState<'unlock' | 'change'>('unlock');
@@ -217,17 +224,26 @@ export default function App() {
     });
   };
 
-  // Print Family Tree in formatted A4
-  const handlePrint = useCallback(() => {
-    // Expand all branches so that the entire tree is visible when printed
-    const allParentIds = getAllNodeIdsWithChildren(members);
-    setExpandedIds(new Set(allParentIds));
-    showNotification('جارٍ تجهيز شجرة العائلة للطباعة بنسق A4...');
+  // Download Family Tree as PDF
+  const handleDownloadPdf = useCallback(async () => {
+    try {
+      setIsGeneratingPdf(true);
+      // Expand all branches so that the entire tree is captured
+      const allParentIds = getAllNodeIdsWithChildren(members);
+      setExpandedIds(new Set(allParentIds));
+      showNotification('جارٍ إنشاء ملف PDF لشجرة العائلة...');
 
-    // Short timeout to let React render all expanded nodes before triggering print
-    setTimeout(() => {
-      window.print();
-    }, 280);
+      // Short timeout to let React render all expanded nodes before capturing
+      await new Promise((resolve) => setTimeout(resolve, 350));
+
+      await exportFamilyTreeToPdf('family-tree-content');
+      showNotification('تم تحميل ملف PDF بنجاح 📄');
+    } catch (error) {
+      console.error('PDF export error:', error);
+      showNotification('حدث خطأ أثناء إنشاء ملف PDF', 'error');
+    } finally {
+      setIsGeneratingPdf(false);
+    }
   }, [members]);
 
   return (
@@ -261,7 +277,8 @@ export default function App() {
         onCollapseAll={handleCollapseAll}
         onSelectMember={handleSelectMember}
         onSeedSample={handleSeedSample}
-        onPrint={handlePrint}
+        onDownloadPdf={handleDownloadPdf}
+        isGeneratingPdf={isGeneratingPdf}
       />
 
       {/* Main Family Tree Canvas */}

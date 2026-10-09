@@ -1,0 +1,42 @@
+{
+  "entities": {
+    "FamilyMember": {
+      "title": "FamilyMember",
+      "description": "فرد في شجرة العائلة يحتوي على اسمه ومعرف والده",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "اسم الشخص فقط",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "parentId": {
+          "type": "string",
+          "description": "معرف الوالد أو سلسلة فارغة إذا كان الجد/أصل الشجرة",
+          "maxLength": 128
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "معرف المستخدم الذي أضاف الشخص",
+          "maxLength": 128
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "وقت الإضافة"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "وقت آخر تعديل"
+        }
+      },
+      "required": ["name", "parentId", "createdBy", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/members/{memberId}": {
+      "schema": "FamilyMember",
+      "description": "مجموعة أفراد شجرة العائلة"
+    }
+  }
+}

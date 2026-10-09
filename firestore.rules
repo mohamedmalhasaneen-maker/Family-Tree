@@ -1,0 +1,70 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.email == 'mohamed.m.alhasaneen@gmail.com' && request.auth.token.email_verified == true;
+    }
+
+    function isValidMember(data) {
+      return data.keys().hasAll(['name', 'parentId', 'createdBy', 'createdAt', 'updatedAt']) &&
+             data.keys().hasOnly(['name', 'parentId', 'createdBy', 'createdAt', 'updatedAt']) &&
+             data.name is string && data.name.size() >= 1 && data.name.size() <= 80 &&
+             data.parentId is string && data.parentId.size() <= 128 &&
+             data.createdBy is string && data.createdBy.size() <= 128 &&
+             data.createdAt is string && data.createdAt.size() <= 50 &&
+             data.updatedAt is string && data.updatedAt.size() <= 50;
+    }
+
+    match /members/{memberId} {
+      // Family tree viewable by everyone
+      allow read: if true;
+
+      // Creation requires verified authentication and strict schema matching
+      allow create: if isVerified() &&
+                       isValidId(memberId) &&
+                       isValidMember(incoming()) &&
+                       incoming().createdBy == request.auth.uid;
+
+      // Update requires verified authentication, preserving immutables, updating allowed fields
+      allow update: if isVerified() &&
+                       isValidId(memberId) &&
+                       isValidMember(incoming()) &&
+                       incoming().createdBy == existing().createdBy &&
+                       incoming().createdAt == existing().createdAt &&
+                       (
+                         isAdmin() ||
+                         incoming().diff(existing()).affectedKeys().hasOnly(['name', 'parentId', 'updatedAt'])
+                       );
+
+      // Deletion allowed for admin or creator
+      allow delete: if isVerified() &&
+                       isValidId(memberId) &&
+                       (isAdmin() || existing().createdBy == request.auth.uid);
+    }
+  }
+}

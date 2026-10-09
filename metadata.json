@@ -1,0 +1,7 @@
+{
+  "name": "شجرة العائلة",
+  "description": "تطبيق شجرة العائلة التفاعلي لعرض وإدارة الأنساب والفروع بتصميم بسيط وأنيق",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

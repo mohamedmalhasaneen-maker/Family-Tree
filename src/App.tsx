@@ -1,11 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import type { User } from 'firebase/auth';
 import type { FamilyMember } from './types';
-import {
-  auth,
-  onAuthStateChanged,
-  signOutUser,
-} from './lib/firebase';
 import {
   subscribeFamilyMembers,
   addMember,
@@ -23,22 +17,29 @@ import { FamilyTreeCanvas } from './components/FamilyTreeCanvas';
 import { AddMemberModal } from './components/AddMemberModal';
 import { EditMemberModal } from './components/EditMemberModal';
 import { DeleteConfirmModal } from './components/DeleteConfirmModal';
-import { AuthModal } from './components/AuthModal';
+import { PasswordModal } from './components/PasswordModal';
+
+const STORAGE_PASSWORD_KEY = 'family_tree_edit_password';
 
 export default function App() {
-  const [user, setUser] = useState<User | null>(null);
   const [members, setMembers] = useState<FamilyMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
+
+  // Read-only mode & Password protection state
+  const [isReadOnly, setIsReadOnly] = useState<boolean>(true);
+  const [passwordHash, setPasswordHash] = useState<string>(() => {
+    return localStorage.getItem(STORAGE_PASSWORD_KEY) || '1234';
+  });
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [passwordModalMode, setPasswordModalMode] = useState<'unlock' | 'change'>('unlock');
 
   // Modals state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [addParentId, setAddParentId] = useState<string>('');
   const [editingMember, setEditingMember] = useState<FamilyMember | null>(null);
   const [deletingMember, setDeletingMember] = useState<FamilyMember | null>(null);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
   const [notification, setNotification] = useState<{
     message: string;
     type: 'success' | 'error';
@@ -50,18 +51,6 @@ export default function App() {
       setNotification((curr) => (curr?.message === message ? null : curr));
     }, 3500);
   };
-
-  // Auth state listener
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      if (currentUser && pendingAction) {
-        pendingAction();
-        setPendingAction(null);
-      }
-    });
-    return () => unsubscribe();
-  }, [pendingAction]);
 
   // Firestore real-time listener for Family Members
   useEffect(() => {
@@ -94,18 +83,42 @@ export default function App() {
   // Build tree hierarchy
   const rootNodes = useMemo(() => buildTree(members), [members]);
 
-  // Require Auth guard
-  const requireAuth = useCallback(
+  // Toggle Read-Only Mode with password check
+  const handleToggleReadOnly = () => {
+    if (isReadOnly) {
+      // Prompt password to unlock
+      setPasswordModalMode('unlock');
+      setIsPasswordModalOpen(true);
+    } else {
+      // Re-lock immediately
+      setIsReadOnly(true);
+      showNotification('تم تفعيل وضع القراءة فقط 🔒');
+    }
+  };
+
+  const handleSuccessUnlock = () => {
+    setIsReadOnly(false);
+    showNotification('تم تفعيل وضع التعديل بنجاح 🔓');
+  };
+
+  const handleChangePassword = (newPassword: string) => {
+    localStorage.setItem(STORAGE_PASSWORD_KEY, newPassword);
+    setPasswordHash(newPassword);
+    showNotification('تم تحديث كلمة المرور بنجاح 🔑');
+  };
+
+  // Check if locked before modifying
+  const ensureUnlocked = useCallback(
     (action: () => void) => {
-      if (!user) {
-        setPendingAction(() => action);
-        setIsAuthModalOpen(true);
+      if (isReadOnly) {
+        setPasswordModalMode('unlock');
+        setIsPasswordModalOpen(true);
         return false;
       }
       action();
       return true;
     },
-    [user]
+    [isReadOnly]
   );
 
   // Toggle child expansion for a node
@@ -153,27 +166,26 @@ export default function App() {
 
   // Action handlers
   const handleOpenAddModal = (parentId = '') => {
-    requireAuth(() => {
+    ensureUnlocked(() => {
       setAddParentId(parentId);
       setIsAddModalOpen(true);
     });
   };
 
   const handleOpenEditModal = (member: FamilyMember) => {
-    requireAuth(() => {
+    ensureUnlocked(() => {
       setEditingMember(member);
     });
   };
 
   const handleOpenDeleteModal = (member: FamilyMember) => {
-    requireAuth(() => {
+    ensureUnlocked(() => {
       setDeletingMember(member);
     });
   };
 
   const handleAddSubmit = async (name: string, parentId: string) => {
-    if (!user) return;
-    await addMember(name, parentId, user);
+    await addMember(name, parentId);
     showNotification(`تمت إضافة «${name}» إلى الشجرة بنجاح`);
     // Ensure parent is expanded so new member is immediately visible
     if (parentId) {
@@ -194,21 +206,15 @@ export default function App() {
   };
 
   const handleSeedSample = async () => {
-    requireAuth(async () => {
-      if (!user) return;
+    ensureUnlocked(async () => {
       try {
-        await seedSampleFamily(user);
+        await seedSampleFamily();
         showNotification('تم إنشاء شجرة نموذجية بنجاح');
       } catch (err) {
         console.error(err);
         showNotification('تعذر إضافة الشجرة النموذجية', 'error');
       }
     });
-  };
-
-  const handleSignOut = async () => {
-    await signOutUser();
-    showNotification('تم تسجيل الخروج بنجاح');
   };
 
   return (
@@ -230,15 +236,18 @@ export default function App() {
 
       {/* Top Navigation Header */}
       <Header
-        user={user}
         allMembers={members}
+        isReadOnly={isReadOnly}
+        onToggleReadOnly={handleToggleReadOnly}
+        onChangePasswordClick={() => {
+          setPasswordModalMode('change');
+          setIsPasswordModalOpen(true);
+        }}
         onAddPersonClick={() => handleOpenAddModal('')}
         onExpandAll={handleExpandAll}
         onCollapseAll={handleCollapseAll}
         onSelectMember={handleSelectMember}
         onSeedSample={handleSeedSample}
-        onOpenAuth={() => setIsAuthModalOpen(true)}
-        onSignOut={handleSignOut}
       />
 
       {/* Main Family Tree Canvas */}
@@ -253,6 +262,7 @@ export default function App() {
             rootNodes={rootNodes}
             expandedIds={expandedIds}
             highlightedId={highlightedId}
+            isReadOnly={isReadOnly}
             onToggleExpand={handleToggleExpand}
             onAddChild={(parent) => handleOpenAddModal(parent.id)}
             onEdit={handleOpenEditModal}
@@ -287,9 +297,13 @@ export default function App() {
         onConfirm={handleDeleteConfirm}
       />
 
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
+      <PasswordModal
+        isOpen={isPasswordModalOpen}
+        mode={passwordModalMode}
+        currentPasswordHash={passwordHash}
+        onClose={() => setIsPasswordModalOpen(false)}
+        onSuccessUnlock={handleSuccessUnlock}
+        onChangePassword={handleChangePassword}
       />
     </div>
   );

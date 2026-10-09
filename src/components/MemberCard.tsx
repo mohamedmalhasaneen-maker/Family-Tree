@@ -7,6 +7,7 @@ interface MemberCardProps {
   hasChildren: boolean;
   isExpanded: boolean;
   isHighlighted?: boolean;
+  isReadOnly?: boolean;
   onToggleExpand: () => void;
   onAddChild: (parentMember: FamilyMember) => void;
   onEdit: (member: FamilyMember) => void;
@@ -18,6 +19,7 @@ export const MemberCard: React.FC<MemberCardProps> = ({
   hasChildren,
   isExpanded,
   isHighlighted,
+  isReadOnly = false,
   onToggleExpand,
   onAddChild,
   onEdit,
@@ -47,43 +49,45 @@ export const MemberCard: React.FC<MemberCardProps> = ({
           {member.name}
         </span>
 
-        {/* Hover / Quick Action Buttons */}
-        <div
-          className={`absolute -top-3.5 right-1/2 translate-x-1/2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-stone-900/90 text-white shadow-lg backdrop-blur-xs transition-all duration-200 ${
-            isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none'
-          }`}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <button
-            type="button"
-            title="إضافة ابن / ابنة"
-            aria-label="إضافة ابن"
-            onClick={() => onAddChild(member)}
-            className="p-1 hover:text-emerald-300 transition-colors cursor-pointer"
+        {/* Hover / Quick Action Buttons (Hidden completely in Read-Only mode) */}
+        {!isReadOnly && (
+          <div
+            className={`absolute -top-3.5 right-1/2 translate-x-1/2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-stone-900/90 text-white shadow-lg backdrop-blur-xs transition-all duration-200 ${
+              isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none'
+            }`}
+            onClick={(e) => e.stopPropagation()}
           >
-            <Plus className="w-3.5 h-3.5" />
-          </button>
-          <div className="w-[1px] h-3 bg-stone-700" />
-          <button
-            type="button"
-            title="تعديل الاسم"
-            aria-label="تعديل"
-            onClick={() => onEdit(member)}
-            className="p-1 hover:text-amber-300 transition-colors cursor-pointer"
-          >
-            <Edit2 className="w-3.5 h-3.5" />
-          </button>
-          <div className="w-[1px] h-3 bg-stone-700" />
-          <button
-            type="button"
-            title="حذف الشخص"
-            aria-label="حذف"
-            onClick={() => onDelete(member)}
-            className="p-1 hover:text-rose-300 transition-colors cursor-pointer"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
-        </div>
+            <button
+              type="button"
+              title="إضافة ابن / ابنة"
+              aria-label="إضافة ابن"
+              onClick={() => onAddChild(member)}
+              className="p-1 hover:text-emerald-300 transition-colors cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+            </button>
+            <div className="w-[1px] h-3 bg-stone-700" />
+            <button
+              type="button"
+              title="تعديل الاسم"
+              aria-label="تعديل"
+              onClick={() => onEdit(member)}
+              className="p-1 hover:text-amber-300 transition-colors cursor-pointer"
+            >
+              <Edit2 className="w-3.5 h-3.5" />
+            </button>
+            <div className="w-[1px] h-3 bg-stone-700" />
+            <button
+              type="button"
+              title="حذف الشخص"
+              aria-label="حذف"
+              onClick={() => onDelete(member)}
+              className="p-1 hover:text-rose-300 transition-colors cursor-pointer"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Down/Up Arrow Toggle (Shown ONLY if person has children) */}

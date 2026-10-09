@@ -4,36 +4,36 @@ import {
   Plus,
   ChevronsDownUp,
   ChevronsUpDown,
-  LogIn,
-  LogOut,
   Sparkles,
   X,
+  Lock,
+  Unlock,
+  Key,
 } from 'lucide-react';
-import type { User } from 'firebase/auth';
 import type { FamilyMember } from '../types';
 
 interface HeaderProps {
-  user: User | null;
   allMembers: FamilyMember[];
+  isReadOnly: boolean;
+  onToggleReadOnly: () => void;
+  onChangePasswordClick: () => void;
   onAddPersonClick: () => void;
   onExpandAll: () => void;
   onCollapseAll: () => void;
   onSelectMember: (member: FamilyMember) => void;
   onSeedSample: () => void;
-  onOpenAuth: () => void;
-  onSignOut: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  user,
   allMembers,
+  isReadOnly,
+  onToggleReadOnly,
+  onChangePasswordClick,
   onAddPersonClick,
   onExpandAll,
   onCollapseAll,
   onSelectMember,
   onSeedSample,
-  onOpenAuth,
-  onSignOut,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -62,9 +62,9 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-stone-200 px-4 sm:px-6 py-3 shadow-2xs">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
-        {/* Brand & Stats */}
+    <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-stone-200 px-3 sm:px-6 py-2.5 sm:py-3 shadow-2xs">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2.5 sm:gap-3">
+        {/* Brand & Mobile Controls */}
         <div className="flex items-center justify-between w-full md:w-auto gap-3">
           <div className="flex items-center gap-2.5">
             <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
@@ -84,21 +84,46 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
 
-          {/* Mobile Add Person quick button */}
-          <div className="flex items-center gap-2 md:hidden">
+          {/* Mobile Right: Read-Only toggle and Add button if unlocked */}
+          <div className="flex items-center gap-1.5 md:hidden">
+            {/* Read-only toggle button for mobile */}
             <button
               type="button"
-              onClick={onAddPersonClick}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-colors cursor-pointer"
+              onClick={onToggleReadOnly}
+              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                isReadOnly
+                  ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                  : 'bg-emerald-50 text-emerald-800 border border-emerald-300'
+              }`}
             >
-              <Plus className="w-3.5 h-3.5" />
-              <span>إضافة شخص</span>
+              {isReadOnly ? (
+                <>
+                  <Lock className="w-3.5 h-3.5 text-amber-600" />
+                  <span>قراءة فقط</span>
+                </>
+              ) : (
+                <>
+                  <Unlock className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>تعديل</span>
+                </>
+              )}
             </button>
+
+            {!isReadOnly && (
+              <button
+                type="button"
+                onClick={onAddPersonClick}
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-colors cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>إضافة</span>
+              </button>
+            )}
           </div>
         </div>
 
         {/* Center: Search input */}
-        <div ref={searchRef} className="relative w-full md:w-72 lg:w-80">
+        <div ref={searchRef} className="relative w-full md:w-64 lg:w-72">
           <div className="relative flex items-center">
             <Search className="absolute right-3.5 w-4 h-4 text-stone-400 pointer-events-none" />
             <input
@@ -163,8 +188,63 @@ export const Header: React.FC<HeaderProps> = ({
           )}
         </div>
 
-        {/* Right Actions: Expand/Collapse, Add Person, Auth */}
+        {/* Right Actions: Read-Only Toggle, Expand/Collapse, Add Person */}
         <div className="flex items-center gap-2 w-full md:w-auto justify-end flex-wrap">
+          {/* Read-Only Mode Toggle Switch (Desktop) */}
+          <div className="hidden md:flex items-center gap-1.5 bg-stone-100/90 p-1 rounded-2xl border border-stone-200">
+            <button
+              type="button"
+              onClick={onToggleReadOnly}
+              title={
+                isReadOnly
+                  ? 'وضع القراءة فقط مفعّل (محمي بكلمة مرور) - انقر لإلغائه وتفعيل التعديل'
+                  : 'وضع التعديل مفتوح - انقر لقفله والعودة لوضع القراءة فقط'
+              }
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer select-none ${
+                isReadOnly
+                  ? 'bg-amber-100/90 text-amber-900 shadow-2xs hover:bg-amber-200/90'
+                  : 'bg-white text-emerald-800 shadow-2xs hover:bg-stone-50'
+              }`}
+            >
+              {/* Toggle switch visual */}
+              <div
+                className={`w-7 h-4 rounded-full transition-colors flex items-center px-0.5 ${
+                  isReadOnly ? 'bg-amber-400' : 'bg-emerald-500'
+                }`}
+              >
+                <div
+                  className={`w-3 h-3 rounded-full bg-white shadow-xs transition-transform transform ${
+                    isReadOnly ? 'translate-x-0' : '-translate-x-3'
+                  }`}
+                />
+              </div>
+
+              {isReadOnly ? (
+                <div className="flex items-center gap-1">
+                  <Lock className="w-3.5 h-3.5 text-amber-700" />
+                  <span>وضع القراءة فقط</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1">
+                  <Unlock className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>وضع التعديل</span>
+                </div>
+              )}
+            </button>
+
+            {/* Key icon to change password when unlocked */}
+            {!isReadOnly && (
+              <button
+                type="button"
+                onClick={onChangePasswordClick}
+                title="تغيير كلمة المرور"
+                className="p-1.5 text-stone-500 hover:text-emerald-700 hover:bg-white rounded-xl transition-colors cursor-pointer"
+              >
+                <Key className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
           {/* Expand All / Collapse All */}
           <div className="flex items-center gap-1 bg-stone-100 p-1 rounded-2xl border border-stone-200/60">
             <button
@@ -174,7 +254,7 @@ export const Header: React.FC<HeaderProps> = ({
               className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl hover:bg-white text-stone-700 text-xs font-semibold hover:shadow-2xs transition-all cursor-pointer"
             >
               <ChevronsUpDown className="w-3.5 h-3.5 text-stone-500" />
-              <span className="hidden sm:inline">توسيع الكل</span>
+              <span className="hidden lg:inline">توسيع الكل</span>
             </button>
             <button
               type="button"
@@ -183,22 +263,24 @@ export const Header: React.FC<HeaderProps> = ({
               className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl hover:bg-white text-stone-700 text-xs font-semibold hover:shadow-2xs transition-all cursor-pointer"
             >
               <ChevronsDownUp className="w-3.5 h-3.5 text-stone-500" />
-              <span className="hidden sm:inline">طي الكل</span>
+              <span className="hidden lg:inline">طي الكل</span>
             </button>
           </div>
 
-          {/* Add Person (Desktop) */}
-          <button
-            type="button"
-            onClick={onAddPersonClick}
-            className="hidden md:inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 shadow-xs transition-all cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            <span>+ إضافة شخص</span>
-          </button>
+          {/* Add Person (Desktop) - Hidden if in Read-Only mode */}
+          {!isReadOnly && (
+            <button
+              type="button"
+              onClick={onAddPersonClick}
+              className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 shadow-xs transition-all cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>+ إضافة شخص</span>
+            </button>
+          )}
 
-          {/* Seed Sample (if tree has very few or 0 items) */}
-          {allMembers.length <= 1 && (
+          {/* Seed Sample (if tree has very few or 0 items and NOT in read-only mode) */}
+          {!isReadOnly && allMembers.length <= 1 && (
             <button
               type="button"
               onClick={onSeedSample}
@@ -206,46 +288,7 @@ export const Header: React.FC<HeaderProps> = ({
               className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-2xl bg-stone-100 hover:bg-emerald-50 text-stone-700 hover:text-emerald-700 text-xs font-semibold border border-stone-200 transition-colors cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              <span className="hidden lg:inline">شجرة نموذجية</span>
-            </button>
-          )}
-
-          {/* Auth Button */}
-          {user ? (
-            <div className="flex items-center gap-2 pl-1 border-r border-stone-200 pr-2">
-              <div
-                title={user.displayName || user.email || ''}
-                className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 font-bold text-xs flex items-center justify-center border border-emerald-300 overflow-hidden"
-              >
-                {user.photoURL ? (
-                  <img
-                    src={user.photoURL}
-                    alt={user.displayName || ''}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <span>
-                    {(user.displayName || user.email || 'م')[0].toUpperCase()}
-                  </span>
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={onSignOut}
-                title="تسجيل الخروج"
-                className="p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-xl transition-colors cursor-pointer"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={onOpenAuth}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-stone-100 hover:bg-stone-200/80 text-stone-700 text-xs font-bold border border-stone-200 transition-all cursor-pointer"
-            >
-              <LogIn className="w-3.5 h-3.5 text-emerald-600" />
-              <span>تسجيل الدخول</span>
+              <span className="hidden xl:inline">شجرة نموذجية</span>
             </button>
           )}
         </div>

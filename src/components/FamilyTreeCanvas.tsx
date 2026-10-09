@@ -7,6 +7,7 @@ interface FamilyTreeCanvasProps {
   rootNodes: TreeNode[];
   expandedIds: Set<string>;
   highlightedId: string | null;
+  isReadOnly?: boolean;
   onToggleExpand: (id: string) => void;
   onAddChild: (parentMember: FamilyMember) => void;
   onEdit: (member: FamilyMember) => void;
@@ -18,6 +19,7 @@ export const FamilyTreeCanvas: React.FC<FamilyTreeCanvasProps> = ({
   rootNodes,
   expandedIds,
   highlightedId,
+  isReadOnly = false,
   onToggleExpand,
   onAddChild,
   onEdit,
@@ -245,6 +247,7 @@ export const FamilyTreeCanvas: React.FC<FamilyTreeCanvasProps> = ({
                 node={rootNode}
                 expandedIds={expandedIds}
                 highlightedId={highlightedId}
+                isReadOnly={isReadOnly}
                 onToggleExpand={onToggleExpand}
                 onAddChild={onAddChild}
                 onEdit={onEdit}

@@ -30,7 +30,7 @@
           "description": "وقت آخر تعديل"
         }
       },
-      "required": ["name", "parentId", "createdBy", "createdAt", "updatedAt"]
+      "required": ["name", "parentId", "createdAt", "updatedAt"]
     }
   },
   "firestore": {

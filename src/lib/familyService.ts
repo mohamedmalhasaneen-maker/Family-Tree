@@ -57,8 +57,7 @@ export function subscribeFamilyMembers(
 
 export async function addMember(
   name: string,
-  parentId: string,
-  user: User
+  parentId: string
 ): Promise<FamilyMember> {
   const trimmedName = name.trim();
   if (!trimmedName) {
@@ -73,7 +72,7 @@ export async function addMember(
     id,
     name: trimmedName,
     parentId: parentId || '',
-    createdBy: user.uid,
+    createdBy: '',
     createdAt: now,
     updatedAt: now,
   };
@@ -82,7 +81,6 @@ export async function addMember(
     await setDoc(docRef, {
       name: newMember.name,
       parentId: newMember.parentId,
-      createdBy: newMember.createdBy,
       createdAt: newMember.createdAt,
       updatedAt: newMember.updatedAt,
     });
@@ -178,7 +176,7 @@ export async function deleteMember(
   }
 }
 
-export async function seedSampleFamily(user: User): Promise<void> {
+export async function seedSampleFamily(): Promise<void> {
   const batch = writeBatch(db);
   const now = new Date().toISOString();
 
@@ -188,7 +186,6 @@ export async function seedSampleFamily(user: User): Promise<void> {
   batch.set(rootRef, {
     name: 'عبدالله',
     parentId: '',
-    createdBy: user.uid,
     createdAt: now,
     updatedAt: now,
   });
@@ -201,7 +198,6 @@ export async function seedSampleFamily(user: User): Promise<void> {
   batch.set(doc(db, MEMBERS_PATH, mohamedId), {
     name: 'محمد',
     parentId: rootId,
-    createdBy: user.uid,
     createdAt: now,
     updatedAt: now,
   });
@@ -209,7 +205,6 @@ export async function seedSampleFamily(user: User): Promise<void> {
   batch.set(doc(db, MEMBERS_PATH, ahmedId), {
     name: 'أحمد',
     parentId: rootId,
-    createdBy: user.uid,
     createdAt: now,
     updatedAt: now,
   });
@@ -217,7 +212,6 @@ export async function seedSampleFamily(user: User): Promise<void> {
   batch.set(doc(db, MEMBERS_PATH, mahmoudId), {
     name: 'محمود',
     parentId: rootId,
-    createdBy: user.uid,
     createdAt: now,
     updatedAt: now,
   });
@@ -229,7 +223,6 @@ export async function seedSampleFamily(user: User): Promise<void> {
   batch.set(doc(db, MEMBERS_PATH, aliId), {
     name: 'علي',
     parentId: mohamedId,
-    createdBy: user.uid,
     createdAt: now,
     updatedAt: now,
   });
@@ -237,7 +230,6 @@ export async function seedSampleFamily(user: User): Promise<void> {
   batch.set(doc(db, MEMBERS_PATH, hassanId), {
     name: 'حسن',
     parentId: mohamedId,
-    createdBy: user.uid,
     createdAt: now,
     updatedAt: now,
   });
@@ -249,7 +241,6 @@ export async function seedSampleFamily(user: User): Promise<void> {
   batch.set(doc(db, MEMBERS_PATH, omarId), {
     name: 'عمر',
     parentId: aliId,
-    createdBy: user.uid,
     createdAt: now,
     updatedAt: now,
   });
@@ -257,7 +248,6 @@ export async function seedSampleFamily(user: User): Promise<void> {
   batch.set(doc(db, MEMBERS_PATH, fatimaId), {
     name: 'فاطمة',
     parentId: aliId,
-    createdBy: user.uid,
     createdAt: now,
     updatedAt: now,
   });
@@ -266,7 +256,6 @@ export async function seedSampleFamily(user: User): Promise<void> {
   batch.set(doc(db, MEMBERS_PATH, generateId()), {
     name: 'يوسف',
     parentId: ahmedId,
-    createdBy: user.uid,
     createdAt: now,
     updatedAt: now,
   });
@@ -274,7 +263,6 @@ export async function seedSampleFamily(user: User): Promise<void> {
   batch.set(doc(db, MEMBERS_PATH, generateId()), {
     name: 'سارة',
     parentId: ahmedId,
-    createdBy: user.uid,
     createdAt: now,
     updatedAt: now,
   });

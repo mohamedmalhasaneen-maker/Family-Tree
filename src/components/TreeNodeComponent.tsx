@@ -7,6 +7,7 @@ interface TreeNodeComponentProps {
   node: TreeNode;
   expandedIds: Set<string>;
   highlightedId: string | null;
+  isReadOnly?: boolean;
   onToggleExpand: (id: string) => void;
   onAddChild: (parentMember: FamilyMember) => void;
   onEdit: (member: FamilyMember) => void;
@@ -17,6 +18,7 @@ export const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
   node,
   expandedIds,
   highlightedId,
+  isReadOnly = false,
   onToggleExpand,
   onAddChild,
   onEdit,
@@ -34,6 +36,7 @@ export const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
         hasChildren={hasChildren}
         isExpanded={isExpanded}
         isHighlighted={isHighlighted}
+        isReadOnly={isReadOnly}
         onToggleExpand={() => onToggleExpand(node.member.id)}
         onAddChild={onAddChild}
         onEdit={onEdit}
@@ -88,6 +91,7 @@ export const TreeNodeComponent: React.FC<TreeNodeComponentProps> = ({
                       node={child}
                       expandedIds={expandedIds}
                       highlightedId={highlightedId}
+                      isReadOnly={isReadOnly}
                       onToggleExpand={onToggleExpand}
                       onAddChild={onAddChild}
                       onEdit={onEdit}
